@@ -41,7 +41,8 @@ public final class ClazzContainer {
 			// Somehow the 1.8.8 server realizes that Team.OptionStatus enum class is existing
 			//Class.forName("org.bukkit.scoreboard.Team$OptionStatus");
 			try {
-				org.bukkit.scoreboard.Team.class.getDeclaredMethod("getOption", org.bukkit.scoreboard.Team.Option.class);
+				Class<?> teamOptionClass = Class.forName("org.bukkit.scoreboard.Team$Option");
+				org.bukkit.scoreboard.Team.class.getDeclaredMethod("getOption", teamOptionClass);
 				isTeamOptionStatusEnumExist = true;
 			} catch (Throwable ignored) {
 			}

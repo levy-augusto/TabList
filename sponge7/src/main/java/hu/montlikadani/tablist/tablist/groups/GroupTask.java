@@ -63,7 +63,14 @@ public class GroupTask implements Consumer<Task> {
 
 	public void runTask(Object plugin) {
 		if (ConfigValues.isTablistGroups() && !isRunning()) {
-			task = Task.builder().async().intervalTicks(4).execute(this::accept).submit(plugin);
+			int refreshInterval = ConfigValues.getTablistGroupsRefreshInterval();
+
+			if (refreshInterval < 1) {
+				accept(null);
+				return;
+			}
+
+			task = Task.builder().intervalTicks(refreshInterval).execute(this::accept).submit(plugin);
 		}
 	}
 

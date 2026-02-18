@@ -252,7 +252,12 @@ public final class fakeplayers implements ICommand {
 		}
 
 		try {
-			OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(playerName);
+			OfflinePlayer offlinePlayer = null;
+
+			try {
+				offlinePlayer = (OfflinePlayer) Bukkit.class.getMethod("getOfflinePlayerIfCached", String.class).invoke(null, playerName);
+			} catch (ReflectiveOperationException ignored) {
+			}
 
 			if (offlinePlayer != null) {
 				CompletableFuture<PlayerSkinProperties> future = new CompletableFuture<>();

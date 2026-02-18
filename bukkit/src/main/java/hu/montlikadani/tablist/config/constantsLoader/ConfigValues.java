@@ -42,8 +42,8 @@ public final class ConfigValues {
 		options.copyDefaults(true);
 
 		try {
-			options.parseComments(false);
-		} catch (NoSuchMethodError ignore) {
+			options.getClass().getMethod("parseComments", boolean.class).invoke(options, false);
+		} catch (ReflectiveOperationException ignore) {
 		}
 
 		PER_WORLD_LIST_NAMES.clear();

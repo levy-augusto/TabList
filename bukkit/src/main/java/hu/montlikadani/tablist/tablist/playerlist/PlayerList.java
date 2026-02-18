@@ -157,18 +157,26 @@ public class PlayerList {
 	@SuppressWarnings("deprecation")
 	private void hide(Player to, Player pls) {
 		if (isHideShowByPluginSupported) {
-			to.hidePlayer(plugin, pls);
-		} else {
-			to.hidePlayer(pls);
+			try {
+				to.getClass().getMethod("hidePlayer", org.bukkit.plugin.Plugin.class, Player.class).invoke(to, plugin, pls);
+				return;
+			} catch (ReflectiveOperationException ignored) {
+			}
 		}
+
+		to.hidePlayer(pls);
 	}
 
 	@SuppressWarnings("deprecation")
 	private void show(Player to, Player pls) {
 		if (isHideShowByPluginSupported) {
-			to.showPlayer(plugin, pls);
-		} else {
-			to.showPlayer(pls);
+			try {
+				to.getClass().getMethod("showPlayer", org.bukkit.plugin.Plugin.class, Player.class).invoke(to, plugin, pls);
+				return;
+			} catch (ReflectiveOperationException ignored) {
+			}
 		}
+
+		to.showPlayer(pls);
 	}
 }

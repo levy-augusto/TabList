@@ -15,9 +15,9 @@ public final class TabListAPI {
 
 	static {
 		try {
-			Bukkit.getServer().getTPS();
+			Bukkit.getServer().getClass().getMethod("getTPS");
 			isTpsMethodExists = true;
-		} catch (NoSuchMethodError ignored) {
+		} catch (NoSuchMethodException ignored) {
 		}
 
 		try {
@@ -71,7 +71,14 @@ public final class TabListAPI {
 	 * @return the current amount of ping of the given player
 	 */
 	public static int getPing(Player player) {
-		return isPingMethodExists ? player.getPing() : PacketNM.NMS_PACKET.playerPing(player);
+		if (isPingMethodExists) {
+			try {
+				return (int) player.getClass().getMethod("getPing").invoke(player);
+			} catch (ReflectiveOperationException ignored) {
+			}
+		}
+
+		return PacketNM.NMS_PACKET.playerPing(player);
 	}
 
 	/**
@@ -80,6 +87,13 @@ public final class TabListAPI {
 	 * @return The TPS array measurements according to {@link org.bukkit.Server#getTPS()}
 	 */
 	public static double[] getTPS() {
-		return isTpsMethodExists ? Bukkit.getServer().getTPS() : PacketNM.NMS_PACKET.serverTps();
+		if (isTpsMethodExists) {
+			try {
+				return (double[]) Bukkit.getServer().getClass().getMethod("getTPS").invoke(Bukkit.getServer());
+			} catch (ReflectiveOperationException ignored) {
+			}
+		}
+
+		return PacketNM.NMS_PACKET.serverTps();
 	}
 }

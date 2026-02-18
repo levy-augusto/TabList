@@ -132,8 +132,17 @@ public final class TabList extends org.bukkit.plugin.java.JavaPlugin {
 		}
 
 		if (isFoliaServer) {
-			getServer().getAsyncScheduler().cancelTasks(this);
-			getServer().getGlobalRegionScheduler().cancelTasks(this);
+			try {
+				Object asyncScheduler = getServer().getClass().getMethod("getAsyncScheduler").invoke(getServer());
+				asyncScheduler.getClass().getMethod("cancelTasks", org.bukkit.plugin.Plugin.class).invoke(asyncScheduler, this);
+			} catch (ReflectiveOperationException ignored) {
+			}
+
+			try {
+				Object globalRegionScheduler = getServer().getClass().getMethod("getGlobalRegionScheduler").invoke(getServer());
+				globalRegionScheduler.getClass().getMethod("cancelTasks", org.bukkit.plugin.Plugin.class).invoke(globalRegionScheduler, this);
+			} catch (ReflectiveOperationException ignored) {
+			}
 		} else {
 			getServer().getScheduler().cancelTasks(this);
 

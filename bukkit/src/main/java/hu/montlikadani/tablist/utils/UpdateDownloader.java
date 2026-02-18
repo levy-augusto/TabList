@@ -59,8 +59,11 @@ public abstract class UpdateDownloader {
 
 		String pluginVersion = "";
 		try {
-			pluginVersion = tabList.getPluginMeta().getVersion();
-		} catch (NoSuchMethodError ignore) {
+			Object pluginMeta = tabList.getClass().getMethod("getPluginMeta").invoke(tabList);
+			if (pluginMeta != null) {
+				pluginVersion = (String) pluginMeta.getClass().getMethod("getVersion").invoke(pluginMeta);
+			}
+		} catch (ReflectiveOperationException ignore) {
 		}
 
 		if (pluginVersion.isEmpty()) {

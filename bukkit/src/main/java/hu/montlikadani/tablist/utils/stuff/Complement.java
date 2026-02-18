@@ -2,7 +2,6 @@ package hu.montlikadani.tablist.utils.stuff;
 
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 
 public interface Complement {
@@ -17,6 +16,6 @@ public interface Complement {
 
 	void displayName(Objective objective, String dName);
 
-	Objective registerNewObjective(Scoreboard board, String name, String criteria, String displayName, RenderType renderType);
+	Objective registerNewObjective(Scoreboard board, String name, String criteria, String displayName, Object renderType);
 
 }

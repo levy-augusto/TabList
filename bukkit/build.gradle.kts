@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
+val legacyJava8 = (findProperty("legacyJava8") as String?)?.toBoolean() ?: false
+
 repositories {
     gradlePluginPortal()
     mavenCentral()
@@ -26,13 +28,20 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") // Netty
 }
 
-val nmsProjects = setOf("1_8_8", "1_17_1", "1_18_2", "1_19_1", "1_19_2", "1_19_3", "1_19_4", "1_20_1", "1_20_2",
-    "1_20_4", "1_20_6", "1_21")
+val nmsProjects = if (legacyJava8) {
+    setOf("1_8_8")
+} else {
+    setOf("1_8_8", "1_17_1", "1_18_2", "1_19_1", "1_19_2", "1_19_3", "1_19_4", "1_20_1", "1_20_2", "1_20_4",
+        "1_20_6", "1_21")
+}
 
 dependencies {
     implementation(project(":global"))
     api(project(":api"))
-    api(project(":folia"))
+
+    if (!legacyJava8) {
+        api(project(":folia"))
+    }
 
     nmsProjects.forEach {
         api(project(":v$it"))
@@ -41,11 +50,19 @@ dependencies {
     implementation("org.bstats:bstats-bukkit:3.1.0")
 
     compileOnly("com.github.xtomyserrax:StaffFacilities:5.0.8")
-    compileOnly(libs.authlib)
+    if (legacyJava8) {
+        compileOnly("com.mojang:authlib:1.5.21")
+    } else {
+        compileOnly(libs.authlib)
+    }
     compileOnly("net.luckperms:api:5.4")
 
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT") {
-        exclude("com.mojang", "authlib")
+    if (legacyJava8) {
+        compileOnly(files(rootProject.file("v1_8_8/lib/spigot-1.8.8.jar")))
+    } else {
+        compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT") {
+            exclude("com.mojang", "authlib")
+        }
     }
 
     compileOnly("net.essentialsx:EssentialsX:2.21.0-SNAPSHOT") {

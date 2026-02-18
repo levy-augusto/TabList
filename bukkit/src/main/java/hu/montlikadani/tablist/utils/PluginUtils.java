@@ -7,7 +7,6 @@ import org.bukkit.plugin.Plugin;
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 
-import de.myzelyam.api.vanish.VanishAPI;
 import hu.montlikadani.tablist.config.constantsLoader.ConfigValues;
 import me.xtomyserrax.StaffFacilities.SFAPI;
 import net.ess3.api.IEssentials;
@@ -61,7 +60,8 @@ public final class PluginUtils {
 	public static boolean isVanished(Player player) {
 		if ((SUPER_VANISH != null && SUPER_VANISH.isEnabled())
 				|| (PREMIUM_VANISH != null && PREMIUM_VANISH.isEnabled())) {
-			return VanishAPI.isInvisibleOffline(player.getUniqueId());
+			Boolean invisible = invokeVanishApiBoolean("isInvisibleOffline", new Class[] { java.util.UUID.class }, player.getUniqueId());
+			return invisible != null && invisible;
 		}
 
 		if (ESSENTIALS != null && ESSENTIALS.isEnabled()) {
@@ -94,7 +94,13 @@ public final class PluginUtils {
 	public static int getVanishedPlayers() {
 		if ((SUPER_VANISH != null && SUPER_VANISH.isEnabled())
 				|| (PREMIUM_VANISH != null && PREMIUM_VANISH.isEnabled())) {
-			return VanishAPI.getInvisiblePlayers().size();
+			Object invisiblePlayers = invokeVanishApiObject("getInvisiblePlayers", new Class[0]);
+
+			if (invisiblePlayers instanceof java.util.Collection) {
+				return ((java.util.Collection<?>) invisiblePlayers).size();
+			}
+
+			return 0;
 		}
 
 		if (ESSENTIALS != null && ESSENTIALS.isEnabled()) {
@@ -110,6 +116,20 @@ public final class PluginUtils {
 		}
 
 		return 0;
+	}
+
+	private static Boolean invokeVanishApiBoolean(String methodName, Class<?>[] parameterTypes, Object... args) {
+		Object value = invokeVanishApiObject(methodName, parameterTypes, args);
+		return value instanceof Boolean ? (Boolean) value : null;
+	}
+
+	private static Object invokeVanishApiObject(String methodName, Class<?>[] parameterTypes, Object... args) {
+		try {
+			Class<?> vanishApiClass = Class.forName("de.myzelyam.api.vanish.VanishAPI");
+			return vanishApiClass.getMethod(methodName, parameterTypes).invoke(null, args);
+		} catch (ReflectiveOperationException ignored) {
+			return null;
+		}
 	}
 
 	public static boolean hasPermission(Player player, String perm) {

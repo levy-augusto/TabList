@@ -21,7 +21,7 @@ public final class MineToolsProfile implements hu.montlikadani.tablist.utils.dat
 
         com.google.gson.JsonArray jsonArray = rawElement.getAsJsonObject().get("properties").getAsJsonArray();
 
-        if (jsonArray.isEmpty()) {
+        if (jsonArray.size() == 0) {
             return null;
         }
 

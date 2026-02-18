@@ -2,7 +2,6 @@ package hu.montlikadani.tablist.utils.stuff;
 
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 
 @SuppressWarnings("deprecation")
@@ -46,24 +45,47 @@ public final class Complement1 implements Complement {
 
 	@Override
 	public Objective registerNewObjective(Scoreboard board, String name, String criteria /* Switch to enum? */, String displayName,
-			RenderType renderType) {
+			Object renderType) {
 		if (isCriteriaExists) {
-			org.bukkit.scoreboard.Criteria crit;
+			try {
+				Class<?> criteriaClass = Class.forName("org.bukkit.scoreboard.Criteria");
+				Object crit;
 
-			switch (criteria) {
-			case "health":
-				crit = org.bukkit.scoreboard.Criteria.HEALTH;
-				break;
-			case "dummy": // not used
-				crit = org.bukkit.scoreboard.Criteria.DUMMY;
-				break;
-			default:
-				return null; // prob not
+				switch (criteria) {
+				case "health":
+					crit = criteriaClass.getField("HEALTH").get(null);
+					break;
+				case "dummy": // not used
+					crit = criteriaClass.getField("DUMMY").get(null);
+					break;
+				default:
+					return null; // prob not
+				}
+
+				if (renderType != null) {
+					try {
+						return (Objective) board.getClass()
+								.getMethod("registerNewObjective", String.class, criteriaClass, String.class, renderType.getClass())
+								.invoke(board, name, crit, displayName, renderType);
+					} catch (NoSuchMethodException ignored) {
+					}
+				}
+
+				return (Objective) board.getClass().getMethod("registerNewObjective", String.class, criteriaClass, String.class)
+						.invoke(board, name, crit, displayName);
+			} catch (ReflectiveOperationException ignored) {
 			}
-
-			return board.registerNewObjective(name, crit, displayName, renderType);
 		}
 
-		return board.registerNewObjective(name, criteria, displayName, renderType);
+		if (renderType != null) {
+			try {
+				return (Objective) board.getClass()
+						.getMethod("registerNewObjective", String.class, String.class, String.class, renderType.getClass())
+						.invoke(board, name, criteria, displayName, renderType);
+			} catch (ReflectiveOperationException ignored) {
+			}
+		}
+
+		return board.registerNewObjective(name, criteria);
 	}
 }

@@ -67,7 +67,7 @@ placeholder-format:
 change-prefix-suffix-in-tablist:
   enable: true
 
-  refresh-interval: 4
+  refresh-interval: 10
 
   disabled-worlds:
     use-as-whitelist: false

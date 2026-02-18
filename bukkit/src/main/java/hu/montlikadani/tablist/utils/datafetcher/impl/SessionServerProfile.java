@@ -15,7 +15,7 @@ public final class SessionServerProfile implements hu.montlikadani.tablist.utils
 
         com.google.gson.JsonArray jsonArray = json.get("properties").getAsJsonArray();
 
-        if (jsonArray.isEmpty()) {
+        if (jsonArray.size() == 0) {
             return null;
         }
 

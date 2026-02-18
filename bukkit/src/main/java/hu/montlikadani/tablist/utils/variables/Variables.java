@@ -2,11 +2,9 @@ package hu.montlikadani.tablist.utils.variables;
 
 import hu.montlikadani.api.Pair;
 import hu.montlikadani.api.TicksPerSecondType;
-import hu.montlikadani.tablist.FoliaPack;
 import java.time.LocalDateTime;
 
 import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.tablist.config.constantsLoader.ConfigValues;
@@ -27,15 +25,17 @@ public final class Variables {
 	private final java.util.Set<TimedVariable> timedVariables = new java.util.HashSet<>(8);
 
 	private final boolean entityAttributeSupported;
+	private transient java.lang.reflect.Method foliaTickReportMethod;
 
 	public Variables(TabList plugin) {
 		this.plugin = plugin;
 
 		boolean att;
 		try {
-			Attribute.GENERIC_MAX_HEALTH.name();
+			Class<?> attributeClass = Class.forName("org.bukkit.attribute.Attribute");
+			attributeClass.getField("GENERIC_MAX_HEALTH");
 			att = true;
-		} catch (Error err) {
+		} catch (ClassNotFoundException | NoSuchFieldException err) {
 			att = false;
 		}
 		entityAttributeSupported = att;
@@ -209,7 +209,7 @@ public final class Variables {
 
 			if (plugin.isFoliaServer()) {
 				str = Global.replace(str, "%folia-current-region-average-tps-" + one.type + "%", () -> {
-					Pair<Double, String> tickReportData = FoliaPack.tickReportDataByType(one);
+					Pair<Double, String> tickReportData = foliaTickReportDataByType(one);
 
 					return tickReportData.key == -1.0 ? tickReportData.value : tpsDigits(tickReportData.key);
 				});
@@ -243,8 +243,17 @@ public final class Variables {
 
 		text = Global.replace(text, "%player-max-health%", () -> {
 			if (entityAttributeSupported) {
-				org.bukkit.attribute.AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-				return attribute == null ? "" : Double.toString(attribute.getDefaultValue());
+				try {
+					Class<?> attributeClass = Class.forName("org.bukkit.attribute.Attribute");
+					Object genericMaxHealth = attributeClass.getField("GENERIC_MAX_HEALTH").get(null);
+					Object attribute = player.getClass().getMethod("getAttribute", attributeClass).invoke(player, genericMaxHealth);
+
+					if (attribute != null) {
+						Object value = attribute.getClass().getMethod("getDefaultValue").invoke(attribute);
+						return value == null ? "" : Double.toString(((Number) value).doubleValue());
+					}
+				} catch (ReflectiveOperationException ignored) {
+				}
 			}
 
 			return Double.toString(player.getMaxHealth());
@@ -341,5 +350,23 @@ public final class Variables {
 		}
 
 		return supplier.get();
+	}
+
+	@SuppressWarnings("unchecked")
+	private Pair<Double, String> foliaTickReportDataByType(TicksPerSecondType type) {
+		if (foliaTickReportMethod == null) {
+			try {
+				Class<?> foliaPackClass = Class.forName("hu.montlikadani.tablist.FoliaPack");
+				foliaTickReportMethod = foliaPackClass.getMethod("tickReportDataByType", TicksPerSecondType.class);
+			} catch (ClassNotFoundException | NoSuchMethodException ignored) {
+				return new Pair<>(-1.0d, "no value by this type");
+			}
+		}
+
+		try {
+			return (Pair<Double, String>) foliaTickReportMethod.invoke(null, type);
+		} catch (IllegalAccessException | java.lang.reflect.InvocationTargetException ignored) {
+			return new Pair<>(-1.0d, "no value by this type");
+		}
 	}
 }

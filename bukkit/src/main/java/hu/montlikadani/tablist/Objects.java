@@ -5,7 +5,6 @@ import hu.montlikadani.tablist.utils.scheduler.TLScheduler;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 
 import hu.montlikadani.tablist.api.TabListAPI;
@@ -98,7 +97,15 @@ public final class Objects {
 			Objective objective;
 
 			if (renderTypeSupported) {
-				objective = plugin.getComplement().registerNewObjective(board, objectName, "health", objectName, RenderType.HEARTS);
+				Object renderType = null;
+
+				try {
+					Class<?> renderTypeClass = Class.forName("org.bukkit.scoreboard.RenderType");
+					renderType = java.lang.Enum.valueOf((Class<? extends Enum>) renderTypeClass.asSubclass(Enum.class), "HEARTS");
+				} catch (ClassNotFoundException ignored) {
+				}
+
+				objective = plugin.getComplement().registerNewObjective(board, objectName, "health", objectName, renderType);
 			} else {
 				objective = board.registerNewObjective(objectName, "health");
 				plugin.getComplement().displayName(objective, org.bukkit.ChatColor.RED + "\u2665");
@@ -119,12 +126,15 @@ public final class Objects {
 	@SuppressWarnings("deprecation")
 	private void adjustMaxHealth(Player player, double value) {
 		try {
-			org.bukkit.attribute.AttributeInstance maxHealth = player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+			Class<?> attributeClass = Class.forName("org.bukkit.attribute.Attribute");
+			Object genericMaxHealth = attributeClass.getField("GENERIC_MAX_HEALTH").get(null);
+			Object maxHealth = player.getClass().getMethod("getAttribute", attributeClass).invoke(player, genericMaxHealth);
 
 			if (maxHealth != null) {
-				maxHealth.setBaseValue(maxHealth.getBaseValue() + value);
+				double baseValue = (double) maxHealth.getClass().getMethod("getBaseValue").invoke(maxHealth);
+				maxHealth.getClass().getMethod("setBaseValue", double.class).invoke(maxHealth, baseValue + value);
 			}
-		} catch (Error err) {
+		} catch (ReflectiveOperationException | Error err) {
 			player.setMaxHealth(player.getMaxHealth() + value);
 		}
 	}

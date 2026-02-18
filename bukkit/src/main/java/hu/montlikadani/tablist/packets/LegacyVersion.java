@@ -502,21 +502,24 @@ public final class LegacyVersion implements IPacketNM {
 
                 for (Team team : player.getScoreboard().getTeams()) {
                     if (ClazzContainer.isTeamOptionStatusEnumExist()) {
-                        Team.OptionStatus optionStatus = team.getOption(Team.Option.NAME_TAG_VISIBILITY);
+                        try {
+                            Class<?> optionClass = Class.forName("org.bukkit.scoreboard.Team$Option");
+                            Object optionNameTagVisibility = java.lang.Enum.valueOf((Class<? extends Enum>) optionClass.asSubclass(Enum.class),
+                                    "NAME_TAG_VISIBILITY");
+                            Object optionStatus = team.getClass().getMethod("getOption", optionClass).invoke(team, optionNameTagVisibility);
 
-                        switch (optionStatus) {
-                            case FOR_OTHER_TEAMS:
-                                optionName = "hideForOtherTeams";
-                                break;
-                            case FOR_OWN_TEAM:
-                                optionName = "hideForOwnTeam";
-                                break;
-                            default:
-                                if (optionStatus != Team.OptionStatus.ALWAYS) {
-                                    optionName = optionStatus.name().toLowerCase(Locale.ENGLISH);
+                            if (optionStatus != null) {
+                                String statusName = ((Enum<?>) optionStatus).name();
+
+                                if ("FOR_OTHER_TEAMS".equals(statusName)) {
+                                    optionName = "hideForOtherTeams";
+                                } else if ("FOR_OWN_TEAM".equals(statusName)) {
+                                    optionName = "hideForOwnTeam";
+                                } else if (!"ALWAYS".equals(statusName)) {
+                                    optionName = statusName.toLowerCase(Locale.ENGLISH);
                                 }
-
-                                break;
+                            }
+                        } catch (ReflectiveOperationException ignored) {
                         }
                     } else {
                         org.bukkit.scoreboard.NameTagVisibility visibility = team.getNameTagVisibility();

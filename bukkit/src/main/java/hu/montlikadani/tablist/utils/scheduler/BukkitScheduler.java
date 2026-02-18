@@ -24,7 +24,13 @@ public final class BukkitScheduler implements TLScheduler {
 
     @Override
     public void submitSync(Runnable runnable) {
-        if (plugin.isEnabled() && !plugin.getServer().isPrimaryThread()) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
+
+        if (plugin.getServer().isPrimaryThread()) {
+            runnable.run();
+        } else {
             plugin.getServer().getScheduler().runTask(plugin, runnable);
         }
     }

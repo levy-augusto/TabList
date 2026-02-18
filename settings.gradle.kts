@@ -17,11 +17,17 @@ dependencyResolutionManagement {
 
 rootProject.name = "TabList"
 
-include("api", "global",
-	"v1_21",
-	"v1_20_6", "v1_20_4", "v1_20_2", "v1_20_1",
-	"v1_19_4", "v1_19_3", "v1_19_2", "v1_19_1",
-	"v1_18_2",
-	"v1_17_1",
-	"v1_8_8",
-	"folia", "bukkit", "bungee")
+val legacyJava8 = (providers.gradleProperty("legacyJava8").orNull ?: "false").toBoolean()
+
+if (legacyJava8) {
+	include("api", "global", "v1_8_8", "sponge7")
+} else {
+	include("api", "global",
+		"v1_21",
+		"v1_20_6", "v1_20_4", "v1_20_2", "v1_20_1",
+		"v1_19_4", "v1_19_3", "v1_19_2", "v1_19_1",
+		"v1_18_2",
+		"v1_17_1",
+		"v1_8_8",
+		"folia", "bukkit", "bungee")
+}

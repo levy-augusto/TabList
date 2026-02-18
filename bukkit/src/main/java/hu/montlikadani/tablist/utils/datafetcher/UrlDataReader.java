@@ -15,11 +15,7 @@ public final class UrlDataReader {
             urlConnection.setReadTimeout(5000);
 
             try (InputStreamReader content = new InputStreamReader(urlConnection.getInputStream())) {
-                try {
-                    return JsonParser.parseReader(content).getAsJsonObject();
-                } catch (NoSuchMethodError e) {
-                    return new JsonParser().parse(content).getAsJsonObject();
-                }
+                return new JsonParser().parse(content).getAsJsonObject();
             }
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
@@ -32,7 +28,7 @@ public final class UrlDataReader {
         String decodedValue = new String(java.util.Base64.getDecoder().decode(value));
 
         try {
-            return JsonParser.parseString(decodedValue).getAsJsonObject();
+            return new JsonParser().parse(decodedValue).getAsJsonObject();
         } catch (NoSuchMethodError e) {
             return new JsonParser().parse(decodedValue).getAsJsonObject();
         }

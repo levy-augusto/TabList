@@ -18,7 +18,10 @@ public final class Listeners implements org.bukkit.event.Listener {
 
 	@EventHandler
 	public void onPlJoin(PlayerJoinEvent event) {
-		plugin.newTLScheduler().runTaskAsynchronously(() -> plugin.updateAll(event.getPlayer()));
+		plugin.newTLScheduler().submitSync(() -> {
+			plugin.updateAll(event.getPlayer());
+			plugin.getGroups().refreshNow();
+		});
 	}
 
 	@EventHandler

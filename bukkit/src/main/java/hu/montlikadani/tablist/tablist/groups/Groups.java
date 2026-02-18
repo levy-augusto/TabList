@@ -320,12 +320,23 @@ public final class Groups {
 					return;
 				}
 
-				// Skip method execution to sort players until the current thread is locked
-				if (!lock.isLocked()) {
-					updatePlayers();
-				}
+				plugin.newTLScheduler().submitSync(() -> {
+					// Skip method execution to sort players until the current thread is locked
+					if (!lock.isLocked()) {
+						updatePlayers();
+					}
+				});
 			}, 0, refreshInt);
 		}
+	}
+
+	public void refreshNow() {
+		if (!ConfigValues.isPrefixSuffixEnabled()) {
+			return;
+		}
+
+		setToSort(true);
+		updatePlayers();
 	}
 
 	private void updatePlayers() {

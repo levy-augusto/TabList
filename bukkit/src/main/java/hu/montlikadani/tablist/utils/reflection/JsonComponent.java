@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.NamespacedKey;
-
 import com.google.gson.JsonObject;
 
 import hu.montlikadani.tablist.Global;
@@ -211,12 +209,7 @@ public final class JsonComponent {
 					}
 
 					String res = fonts.computeIfAbsent(text.substring(fromIndex, closeIndex), key -> {
-						try {
-							return NamespacedKey.minecraft(key).toString();
-						} catch (IllegalArgumentException ignore) {
-						}
-
-						return null;
+						return minecraftNamespacedKey(key);
 					});
 
 					if (res != null) {
@@ -224,7 +217,7 @@ public final class JsonComponent {
 					}
 				} else if (text.regionMatches(true, i, "{/font", 0, 6)
 						&& (closeIndex = text.indexOf('}', fromIndex)) != -1) {
-					font = fonts.computeIfAbsent("default", s -> NamespacedKey.minecraft(s).toString());
+					font = fonts.computeIfAbsent("default", s -> minecraftNamespacedKey(s));
 				} else {
 					builder.append(charAt);
 					continue;
@@ -258,5 +251,15 @@ public final class JsonComponent {
 		}
 
 		return true;
+	}
+
+	private String minecraftNamespacedKey(String key) {
+		try {
+			Class<?> namespacedKeyClass = Class.forName("org.bukkit.NamespacedKey");
+			Object nKey = namespacedKeyClass.getMethod("minecraft", String.class).invoke(null, key);
+			return nKey == null ? null : nKey.toString();
+		} catch (ReflectiveOperationException | IllegalArgumentException ignored) {
+			return null;
+		}
 	}
 }

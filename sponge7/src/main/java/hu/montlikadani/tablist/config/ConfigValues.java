@@ -16,7 +16,7 @@ public final class ConfigValues {
 
 	private static boolean useSystemZone, pingFormatEnabled, tablistEnabled, randomTablist, tablistGroups;
 
-	private static int tablistUpdateTime, objectsRefreshInterval;
+	private static int tablistUpdateTime, objectsRefreshInterval, tablistGroupsRefreshInterval;
 
 	private static List<String> pingColorFormats, tabDisabledWorlds, tabRestrictedPlayers;
 
@@ -73,6 +73,9 @@ public final class ConfigValues {
 
 		cm.setComment(node, "Tablist groups that shows up on player list (prefix/suffix).");
 		tablistGroups = node.getNode("enabled").getBoolean(true);
+		cm.setComment(setting = node.getNode("refresh-interval"),
+				"Refresh interval in ticks for group/prefix updates.\nSet to 0 to disable automatic refresh.");
+		tablistGroupsRefreshInterval = setting.getInt(10);
 
 		node = cm.getNode("tablist-objects");
 
@@ -114,6 +117,10 @@ public final class ConfigValues {
 
 	public static boolean isTablistGroups() {
 		return tablistGroups;
+	}
+
+	public static int getTablistGroupsRefreshInterval() {
+		return tablistGroupsRefreshInterval;
 	}
 
 	public static boolean isTablistEnabled() {

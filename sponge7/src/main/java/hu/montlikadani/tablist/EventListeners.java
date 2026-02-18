@@ -13,7 +13,7 @@ public final class EventListeners {
 
 	@Listener
 	public void onJoin(ClientConnectionEvent.Join event) {
-		org.spongepowered.api.scheduler.Task.builder().delayTicks(2L).execute(t -> tl.updateAll(event.getTargetEntity()))
+		org.spongepowered.api.scheduler.Task.builder().delayTicks(2L).execute(t -> tl.updateAll())
 				.submit(tl);
 	}
 

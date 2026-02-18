@@ -51,9 +51,19 @@ public final class Util {
 		if (MINIMESSAGE_SUPPORTED) {
 			value = value.replace("&", "-{-}-").replace("§", "-{-}-");
 
-			value = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
-					.serialize(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(value))
-					.replace("-{-}-", "&");
+			try {
+				Class<?> miniMessageClass = Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
+				Object miniMessage = miniMessageClass.getMethod("miniMessage").invoke(null);
+				Object component = miniMessageClass.getMethod("deserialize", String.class).invoke(miniMessage, value);
+
+				Class<?> componentClass = Class.forName("net.kyori.adventure.text.Component");
+				Class<?> serializerClass = Class.forName("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer");
+				Object serializer = serializerClass.getMethod("legacyAmpersand").invoke(null);
+
+				value = ((String) serializerClass.getMethod("serialize", componentClass).invoke(serializer, component))
+						.replace("-{-}-", "&");
+			} catch (ReflectiveOperationException ignored) {
+			}
 		}
 
 		return applyLegacyColours ? org.bukkit.ChatColor.translateAlternateColorCodes('&', value) : value;
